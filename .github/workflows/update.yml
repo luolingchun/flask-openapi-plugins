@@ -1,0 +1,243 @@
+name: Update OpenAPI UI
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    env:
+      UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+
+      # ---------------------------------star-openapi-swagger-----------------------------------------------------------
+      - name: Update flask-openapi-swagger
+        id: update_swagger
+        run: |
+          cd ./flask-openapi-swagger/flask_openapi_swagger
+          old_version=$(cat __version__.py | grep -oP '(?<=__version__ = ").*(?=")')
+          new_version=$(npm show swagger-ui-dist version)
+          if [ "${new_version}" != "${old_version}" ]; then
+            curl -L https://cdn.jsdelivr.net/npm/swagger-ui-dist@${new_version}/swagger-ui.css \
+                 -o ./templates/swagger/css/swagger-ui.css
+            curl -L https://cdn.jsdelivr.net/npm/swagger-ui-dist@${new_version}/swagger-ui-bundle.js \
+                 -o ./templates/swagger/js/swagger-ui-bundle.js
+            curl -L https://cdn.jsdelivr.net/npm/swagger-ui-dist@${new_version}/swagger-ui-standalone-preset.js \
+                 -o ./templates/swagger/js/swagger-ui-standalone-preset.js
+            echo -e "# -*- coding: utf-8 -*-\n\n__version__ = \"${new_version}\"" > __version__.py
+            echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+            echo "is_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Git Commit
+        if: ${{ steps.update_swagger.outputs.is_update == 'true' }}
+        id: git_commit_swagger
+        run: |
+          new_version=${{ steps.update_swagger.outputs.new_version }}
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update swagger ${new_version}"
+          git push origin main
+
+      - name: Release flask-openapi-swagger
+        if: ${{ steps.git_commit_swagger.outcome == 'success' }}
+        run: |
+          cd flask-openapi-swagger
+          uv build
+          uv publish
+
+
+      # ---------------------------------star-openapi-scalar------------------------------------------------------------
+      - name: Update flask-openapi-scalar
+        id: update_scalar
+        run: |
+          cd ./flask-openapi-scalar/flask_openapi_scalar
+          old_version=$(cat __version__.py | grep -oP '(?<=__version__ = ").*(?=")')
+          new_version=$(npm show @scalar/api-reference version)
+          if [ "${new_version}" != "${old_version}" ]; then
+            curl -L https://cdn.jsdelivr.net/npm/@scalar/api-reference@${new_version}/dist/browser/standalone.min.js \
+                 -o ./templates/scalar/js/scalar.standalone.js
+            echo -e "# -*- coding: utf-8 -*-\n\n__version__ = \"${new_version}\"" > __version__.py
+            echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+            echo "is_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Git Commit
+        if: ${{ steps.update_scalar.outputs.is_update == 'true' }}
+        id: git_commit_scalar
+        run: |
+          new_version=${{ steps.update_scalar.outputs.new_version }}
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update scalar ${new_version}"
+          git push origin main
+
+      - name: Release flask-openapi-scalar
+        if: ${{ steps.git_commit_scalar.outcome == 'success' }}
+        run: |
+          cd flask-openapi-scalar
+          uv build
+          uv publish
+          
+
+      # ---------------------------------star-openapi-redoc-------------------------------------------------------------
+      - name: Update flask-openapi-redoc
+        id: update_redoc
+        run: |
+          cd ./flask-openapi-redoc/flask_openapi_redoc
+          old_version=$(cat __version__.py | grep -oP '(?<=__version__ = ").*(?=")')
+          new_version=$(npm show redoc version)
+          if [ "${new_version}" != "${old_version}" ]; then
+            curl -L https://cdn.jsdelivr.net/npm/redoc@${new_version}/bundles/redoc.standalone.js \
+                 -o ./templates/redoc/js/redoc.standalone.js
+            echo -e "# -*- coding: utf-8 -*-\n\n__version__ = \"${new_version}\"" > __version__.py
+            echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+            echo "is_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Git Commit
+        if: ${{ steps.update_redoc.outputs.is_update == 'true' }}
+        id: git_commit_redoc
+        run: |
+          new_version=${{ steps.update_redoc.outputs.new_version }}
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update redoc ${new_version}"
+          git push origin main
+
+      - name: Release flask-openapi-redoc
+        if: ${{ steps.git_commit_redoc.outcome == 'success' }}
+        run: |
+          cd flask-openapi-redoc
+          uv build
+          uv publish
+          
+
+      # ---------------------------------star-openapi-elements----------------------------------------------------------
+      - name: Update flask-openapi-elements
+        id: update_elements
+        run: |
+          cd ./flask-openapi-elements/flask_openapi_elements
+          old_version=$(cat __version__.py | grep -oP '(?<=__version__ = ").*(?=")')
+          new_version=$(npm show @stoplight/elements version)
+          if [ "${new_version}" != "${old_version}" ]; then
+            curl -L https://cdn.jsdelivr.net/npm/@stoplight/elements@${new_version}/web-components.min.js \
+                 -o ./templates/elements/js/web-components.min.js
+            curl -L https://cdn.jsdelivr.net/npm/@stoplight/elements@${new_version}/styles.min.css \
+                 -o ./templates/elements/css/styles.min.css
+            echo -e "# -*- coding: utf-8 -*-\n\n__version__ = \"${new_version}\"" > __version__.py
+            echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+            echo "is_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Git Commit
+        if: ${{ steps.update_elements.outputs.is_update == 'true' }}
+        id: git_commit_elements
+        run: |
+          new_version=${{ steps.update_elements.outputs.new_version }}
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update elements ${new_version}"
+          git push origin main
+
+      - name: Release flask-openapi-elements
+        if: ${{ steps.git_commit_elements.outcome == 'success' }}
+        run: |
+          cd flask-openapi-elements
+          uv build
+          uv publish
+          
+
+      # ---------------------------------star-openapi-rapidoc-----------------------------------------------------------
+      - name: Update flask-openapi-rapidoc
+        id: update_rapidoc
+        run: |
+          cd ./flask-openapi-rapidoc/flask_openapi_rapidoc
+          old_version=$(cat __version__.py | grep -oP '(?<=__version__ = ").*(?=")')
+          new_version=$(npm show rapidoc version)
+          if [ "${new_version}" != "${old_version}" ]; then
+            curl -L https://cdn.jsdelivr.net/npm/rapidoc@${new_version}/dist/rapidoc-min.js \
+                 -o ./templates/rapidoc/js/rapidoc-min.js
+            echo -e "# -*- coding: utf-8 -*-\n\n__version__ = \"${new_version}\"" > __version__.py
+            echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+            echo "is_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Git Commit
+        if: ${{ steps.update_rapidoc.outputs.is_update == 'true' }}
+        id: git_commit_rapidoc
+        run: |
+          new_version=${{ steps.update_rapidoc.outputs.new_version }}
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update rapidoc ${new_version}"
+          git push origin main
+
+      - name: Release flask-openapi-rapidoc
+        if: ${{ steps.git_commit_rapidoc.outcome == 'success' }}
+        run: |
+          cd flask-openapi-rapidoc
+          uv build
+          uv publish
+          
+
+      # ---------------------------------star-openapi-rapipdf-----------------------------------------------------------
+      - name: Update flask-openapi-rapipdf
+        id: update_rapipdf
+        run: |
+          cd ./flask-openapi-rapipdf/flask_openapi_rapipdf
+          old_version=$(cat __version__.py | grep -oP '(?<=__version__ = ").*(?=")')
+          new_version=$(npm show rapipdf version)
+          if [ "${new_version}" != "${old_version}" ]; then
+            curl -L https://cdn.jsdelivr.net/npm/rapipdf@${new_version}/dist/rapipdf-min.js \
+                 -o ./templates/rapipdf/js/rapipdf-min.js
+            echo -e "# -*- coding: utf-8 -*-\n\n__version__ = \"${new_version}\"" > __version__.py
+            echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+            echo "is_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_update=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Git Commit
+        if: ${{ steps.update_rapipdf.outputs.is_update == 'true' }}
+        id: git_commit_rapipdf
+        run: |
+          new_version=${{ steps.update_rapipdf.outputs.new_version }}
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update rapipdf ${new_version}"
+          git push origin main
+      - name: Release flask-openapi-rapipdf
+        if: ${{ steps.git_commit_rapipdf.outcome == 'success' }}
+        run: |
+          cd flask-openapi-rapipdf
+          uv build
+          uv publish
