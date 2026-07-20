@@ -21,7 +21,7 @@ jobs:
           enable-cache: false
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
 
       # ---------------------------------star-openapi-swagger-----------------------------------------------------------
       - name: Update flask-openapi-swagger
