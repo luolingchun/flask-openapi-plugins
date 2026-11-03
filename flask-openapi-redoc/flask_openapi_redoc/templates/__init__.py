@@ -18,10 +18,11 @@ redoc_html_string = """
 </head>
 <body>
   <div id="redoc"></div>
-  <script src="redoc/js/redoc.standalone.js"></script>
-  <script>
+  <script type="module">
+    import { init } from "./redoc/js/redoc.standalone.js";
+  
     const redoc_config = JSON.parse(`{{ redoc_config|default('{}')|tojson }}`);
-    Redoc.init(
+    init(
       "{{ doc_url }}", redoc_config,
       document.getElementById("redoc"))
   </script>

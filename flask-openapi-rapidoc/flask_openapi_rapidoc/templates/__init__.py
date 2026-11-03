@@ -18,7 +18,7 @@ rapidoc_html_string = """
         rapiDoc.setAttribute(k, rapidoc_config[k]);
     }
 </script>
-<script src="rapidoc/js/rapidoc-min.js"></script>
+<script type="module" src="rapidoc/js/rapidoc-min.js"></script>
 </body>
 </html>
 """
