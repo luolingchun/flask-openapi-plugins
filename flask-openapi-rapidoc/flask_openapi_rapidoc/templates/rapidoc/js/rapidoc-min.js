@@ -1,6 +1,6 @@
 /*!
  * @license
- * rapidoc v14.2.0
+ * rapidoc v14.2.1
  * (c) 2026 Mrinmoy Majumdar <mrin9@yahoo.com>
  * SPDX-License-Identifier: MIT
  * Bundled third-party code and its licenses: rapidoc-min.js.LICENSE.txt
